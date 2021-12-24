@@ -20,24 +20,25 @@ public class JDBC_TeacherRepo extends JDBC_repository<Teacher> {
     @Override
     public Teacher findOne(int teacherID) {
 
-        String teacherQuery="select t.teacherId,t.personalDataId,p.firstName, p.lastName FROM teacher t join person p on p.id = t.teacherId where t.ID="+teacherID;
-        String coursesListQuery = " select c.CourseId, c.title, c.credits,c.teacherId,c.maxStudents from course c where c.teacherId="+teacherID;
+        String teacherQuery="select t.teacherId,t.personId,p.firstName, p.lastName FROM Teacher t join Person p on p.ID = t.personId where t.teacherId="+teacherID;
+        String coursesListQuery = " select c.id, c.title, c.credits,c.teacherId,c.maxStudents from course c where c.teacherId="+teacherID;
+
         Teacher teacher=new Teacher();
-        List<Course> coursesList = new ArrayList<>();
+        ArrayList<Course> coursesList = new ArrayList<>();
 
         try {
 
-            Statement statement = connection.createStatement();
+            Statement statement = createConnection().createStatement();
             ResultSet result = statement.executeQuery(teacherQuery);
 
             if (result.next()) {
                 teacher.setId(result.getInt("teacherId"));
-                teacher.setPersonalId(result.getInt("personalDataId"));
+                teacher.setPersonalId(result.getInt("personId"));
                 teacher.setFirstName(result.getString("firstName"));
                 teacher.setLastName(result.getString("lastName"));
             }
 
-            Statement statement2 = connection.createStatement();
+            Statement statement2 = createConnection().createStatement();
             ResultSet result2 = statement2.executeQuery(coursesListQuery);
 
             while (result2.next()) {
@@ -46,9 +47,10 @@ public class JDBC_TeacherRepo extends JDBC_repository<Teacher> {
                 newTeacher.setId(teacher.getId());
                 newTeacher.setFirstName(teacher.getFirstName());
                 newTeacher.setLastName(teacher.getLastName());
-                course.setId(result2.getInt("ID"));
-                course.setTitle(result2.getString("courseTitle"));
+                course.setId(result2.getInt("id"));
+                course.setTitle(result2.getString("title"));
                 course.setCredits(result2.getInt("credits"));
+                course.setTeacher(teacherID);
                 course.setMaxStudents(result2.getInt("maxStudents"));
                 coursesList.add(course);
             }
@@ -71,24 +73,24 @@ public class JDBC_TeacherRepo extends JDBC_repository<Teacher> {
     public ArrayList<Teacher> findAll()
     {
         ArrayList<Teacher>teacherList=new ArrayList<>();
-        String sqlQuery=" select t.teacherId,t.personalDataId, p.firstName, p.lastName FROM teacher t join person p on p.id=t.personalDataId ";
+        String sqlQuery=" select t.teacherId,t.personId, p.firstName, p.lastName FROM Teacher t join Person p on p.id=t.personId ";
 
 
         try {
 
-            Statement statement = connection.createStatement();
+            Statement statement = createConnection().createStatement();
             ResultSet result = statement.executeQuery(sqlQuery);
 
             while (result.next()) {
                 Teacher teacher=new Teacher();
                 teacher.setId(result.getInt("teacherId"));
-                teacher.setPersonalId(result.getInt("personalDataId"));
+                teacher.setPersonalId(result.getInt("personId"));
                 teacher.setFirstName(result.getString("firstName"));
                 teacher.setLastName(result.getString("lastName"));
 
                 List<Course> teacherCourseList = new ArrayList<>();
-                String coursesListQuery = " select c.CourseId, c.title, c.credits,c.maxStudents from course c where c.teacherId="+teacher.getId();
-                Statement statement2 = connection.createStatement();
+                String coursesListQuery = " select c.id, c.title, c.credits,c.maxStudents from course c where c.teacherId="+teacher.getId();
+                Statement statement2 = createConnection().createStatement();
                 ResultSet result2 = statement2.executeQuery(coursesListQuery);
 
                 while (result2.next()) {
@@ -97,10 +99,10 @@ public class JDBC_TeacherRepo extends JDBC_repository<Teacher> {
                     newTeacher.setId(teacher.getId());
                     newTeacher.setFirstName(teacher.getFirstName());
                     newTeacher.setLastName(teacher.getLastName());
-                    course.setId(result2.getInt("CourseId"));
+                    course.setId(result2.getInt("id"));
                     course.setTitle(result2.getString("title"));
                     course.setCredits(result2.getInt("credits"));
-                    course.setTeacherId(newTeacher.getId());
+                    course.setTeacher(newTeacher.getId());
                     course.setMaxStudents(result2.getInt("maxStudents"));
                     teacherCourseList.add(course);
                 }
@@ -129,24 +131,26 @@ public class JDBC_TeacherRepo extends JDBC_repository<Teacher> {
         }
         else {
             try (
-                    PreparedStatement ps = connection.prepareStatement("INSERT INTO teacher(teacherId, personalDataId) values (?,?)")
+                    PreparedStatement ps = createConnection().prepareStatement("INSERT INTO Person(ID,firstName, lastName) values (?,?,?)")
+
+            ) {
+                ps.setInt(1,newTeacher.getPersonalId());
+
+                ps.setString(2,newTeacher.getFirstName());
+                ps.setString(3,newTeacher.getLastName());
+                ps.execute();
+            }
+             catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+            try (
+                    PreparedStatement ps = createConnection().prepareStatement("INSERT INTO Teacher(teacherId, personId) values (?,?)")
 
             ) {
                 ps.setInt(1,newTeacher.getId());
                 ps.setInt(2,newTeacher.getPersonalId());
                 ps.execute();
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-            try (
-                    PreparedStatement ps = connection.prepareStatement("INSERT INTO person(firstName, lastName, id) values (?,?,?)")
-
-            ) {
-                ps.setString(1,newTeacher.getFirstName());
-                ps.setString(2,newTeacher.getLastName());
-                ps.setInt(3,newTeacher.getId());
-                ps.execute();
-            } catch (SQLException throwables) {
+            }catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
 
@@ -168,7 +172,7 @@ public class JDBC_TeacherRepo extends JDBC_repository<Teacher> {
         {
             try
             {
-                Statement statement = connection.createStatement();
+                Statement statement = createConnection().createStatement();
                 statement.executeUpdate(deleteTeacherQuery);
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
@@ -192,19 +196,8 @@ public class JDBC_TeacherRepo extends JDBC_repository<Teacher> {
             return null;
         }
         else {
-
             try (
-                    PreparedStatement ps = connection.prepareStatement("UPDATE teacher SET teacherId=?, personalDataId=? WHERE teacherId="+teacher.getId())
-
-            ) {
-                ps.setInt(1,teacher.getId());
-                ps.setInt(2,teacher.getPersonalId());
-                ps.execute();
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-            try (
-                    PreparedStatement ps = connection.prepareStatement("UPDATE person SET id=?, firstName=?, lastName=? WHERE id="+teacher.getPersonalId())
+                    PreparedStatement ps = createConnection().prepareStatement("UPDATE person SET ID=?, firstName=?, lastName=? WHERE ID="+teacher.getPersonalId())
 
             ) {
                 ps.setInt(1,teacher.getPersonalId());
@@ -214,6 +207,17 @@ public class JDBC_TeacherRepo extends JDBC_repository<Teacher> {
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
+            try (
+                    PreparedStatement ps = createConnection().prepareStatement("UPDATE teacher SET teacherId=?, personId=? WHERE teacherId="+teacher.getId())
+
+            ) {
+                ps.setInt(1,teacher.getId());
+                ps.setInt(2,teacher.getPersonalId());
+                ps.execute();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
 
         }
         return null;

@@ -1,5 +1,6 @@
 package com.company.Model;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -8,10 +9,10 @@ import java.util.Objects;
 public class Student extends Person {
     private int studentId;
     private int totalCredits;
-    private List<Course>enrolledCourses;
+    private ArrayList<Course>enrolledCourses;
 
 
-    public Student (int studentId,String firstname,String name ,int personalId,int totalCredits,List<Course>enrolledCourses)
+    public Student (int studentId,String firstname,String name ,int personalId,int totalCredits,ArrayList<Course>enrolledCourses)
     {
         this.studentId=studentId;
         super.setLastName(name);
@@ -32,7 +33,7 @@ public class Student extends Person {
 
     public void delete(Course course)
     {
-        List<Course>newCourseList=new ArrayList<>();
+        ArrayList<Course>newCourseList=new ArrayList<>();
         for (Course course1:enrolledCourses)
         {
             if (course.getId()!=course1.getId())
@@ -68,11 +69,11 @@ public class Student extends Person {
         return totalCredits;
     }
 
-    public List<Course> getEnrolledCourses() {
+    public ArrayList<Course> getEnrolledCourses() {
         return enrolledCourses;
     }
 
-    public void setEnrolledCourses(List<Course> enrolledCourses) {
+    public void setEnrolledCourses(ArrayList<Course> enrolledCourses) {
         this.enrolledCourses = enrolledCourses;
     }
 

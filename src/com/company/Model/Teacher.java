@@ -5,25 +5,25 @@ import java.util.Objects;
 
 
 public class Teacher extends Person {
-    private int personId;
+    private int teacherId;
     private List<Course>courses;
 
-    public Teacher (int personId,String firstName,String lastName,int teacherID,List<Course>courses)
+    public Teacher (int teacherID,String firstName,String lastName,int personId,List<Course>courses)
     {
-        this.personId = personId;
+        this.teacherId = teacherID;
         super.setFirstName(firstName);
         super.setLastName(lastName);
-        super.setPersonalId(teacherID);
+        super.setPersonalId(personId);
         this.courses=courses;
     }
     public Teacher (){};
 
     public int getId() {
-        return personId;
+        return teacherId;
     }
 
-    public void setId(int personId) {
-        this.personId = personId;
+    public void setId(int teacherId) {
+        this.teacherId = teacherId;
     }
 
     public List<Course> getCourses() {

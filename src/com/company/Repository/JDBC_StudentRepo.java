@@ -20,7 +20,7 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
     @Override
     public Student findOne(int studentID) {
 
-        String studentQuery=" select s.studentId,s.totalCredits, p.id, p.firstName, p.lastName from student s join person p on p.id = s.personalDataId where s.studentId="+studentID;
+        String studentQuery=" select s.studentId,s.totalCredits, p.id, p.firstName, p.lastName from Student s join Person p on p.ID = s.personId where s.studentId="+studentID;
         Student student=new Student();
         Person person = new Person();
         ArrayList<Course> studentCourses = new ArrayList<>();
@@ -28,32 +28,30 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
 
         try {
 
-            Statement statement = connection.createStatement();
+            Statement statement = createConnection().createStatement();
             ResultSet result = statement.executeQuery(studentQuery);
 
             if (result.next()) {
                 student.setId(result.getInt("studentId"));
                 student.setTotalCredits(result.getInt("totalCredits"));
+                student.setPersonalId(result.getInt("id"));
                 student.setFirstName(result.getString("firstName"));
                 student.setLastName(result.getString("lastName"));
+
             }
 
-            String courseListQuery = "select c.CourseId, c.title, c.credits, c.teacherId, c.maxStudents,p.firstName, p.lastName from course c join enrolment e on e.CourseId = c.CourseId join student s on s.studentId = e.StudentId join person p on p.id = s.personalDataId where s.studentId="+studentID;
-            Statement statement2 = connection.createStatement();
+            String courseListQuery = "select c.id, c.title, c.credits, c.teacherId, c.maxStudents,p.firstName, p.lastName from Course c join Enrolment e on e.courseId = c.id join student s on s.studentId = e.StudentId join person p on p.id = s.personId where s.studentId="+studentID;
+            Statement statement2 = createConnection().createStatement();
             ResultSet result2 = statement2.executeQuery(courseListQuery);
 
             while (result2.next()) {
                 Course course=new Course();
-                Teacher teacher=new Teacher();
-                course.setId(result2.getInt("CourseId"));
+                course.setId(result2.getInt("id"));
                 course.setTitle(result2.getString("title"));
                 course.setCredits(result2.getInt("credits"));
-                int teacherId = result2.getInt("teacherID");
-                course.setTeacherId(teacherId);
-                course.setMaxStudents(result2.getInt("maxEnrollment"));
-                teacher.setPersonalId(teacherId);
-                teacher.setFirstName(result2.getString("firstName"));
-                teacher.setLastName(result2.getString("lastName"));
+                int teacherId = result2.getInt("teacherId");
+                course.setTeacher(teacherId);
+                course.setMaxStudents(result2.getInt("maxStudents"));
                 studentCourses.add(course);
             }
             student.setEnrolledCourses(studentCourses);
@@ -63,7 +61,7 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
 
         if (student.getId() == studentID)
             return student;
-        else
+
             return null;
 
     }
@@ -76,45 +74,44 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
     @Override
     public ArrayList<Student> findAll()
     {
-        String studentQuery=" select s.studentId, s.totalCredits,p.id, p.firstName, p.lastName from student s join person p on p.id = s.personalDataId ";
-        // s join enrolled_students se on s.ID=se.studentID";
+        String studentQuery=" select s.studentId,s.totalCredits, p.id, p.firstName, p.lastName from Student s join Person p on p.ID = s.personId";
+
         ArrayList<Student>studentList=new ArrayList<>();
         try {
-            Statement statement = connection.createStatement();
+            Statement statement = createConnection().createStatement();
             ResultSet result = statement.executeQuery(studentQuery);
+            Student student = new Student();
+
 
 
             while (result.next()) {
-                Student student = new Student();
                 student.setId(result.getInt("studentId"));
                 student.setTotalCredits(result.getInt("totalCredits"));
-                student.setPersonalId(result.getInt("personalDataId"));
+                student.setPersonalId(result.getInt("id"));
                 student.setFirstName(result.getString("firstName"));
                 student.setLastName(result.getString("lastName"));
 
-                String courseListQuery = "select c.CourseId, c.title, c.credits, c.teacherId, c.maxStudents,p.firstName, p.lastName from course c join enrolment e on e.CourseId = c.CourseId join student s on s.studentId = e.StudentId join person p on p.id = s.personalDataId where s.studentId="+student.getId();
-                ArrayList<Course> coursesStudent = new ArrayList<>();
-                Statement statement2 = connection.createStatement();
+
+                String courseListQuery = "select c.id, c.title, c.credits, c.teacherId, c.maxStudents,p.firstName, p.lastName from Course c join Enrolment e on e.courseId = c.id join student s on s.studentId = e.StudentId join person p on p.id = s.personId";
+                ArrayList<Course> studentCourses = new ArrayList<>();
+                Statement statement2 = createConnection().createStatement();
                 ResultSet result2 = statement2.executeQuery(courseListQuery);
 
                 while (result2.next()) {
-                    Course course=new Course();
-                    Teacher teacher=new Teacher();
-                    course.setId(result2.getInt("CourseId"));
+                    Course course = new Course();
+                    course.setId(result2.getInt("id"));
                     course.setTitle(result2.getString("title"));
-                    int teacherId = result2.getInt("teacherID");
-                    teacher.setPersonalId(teacherId);
-                    teacher.setFirstName(result2.getString("firstName"));
-                    teacher.setLastName(result2.getString("lastName"));
                     course.setCredits(result2.getInt("credits"));
-                    course.setMaxStudents(result2.getInt("maxEnrollment"));
-                    course.setTeacherId(teacherId);
-                    coursesStudent.add(course);
+                    int teacherId = result2.getInt("teacherId");
+                    course.setTeacher(teacherId);
+                    course.setMaxStudents(result2.getInt("maxStudents"));
+                    studentCourses.add(course);
                 }
-                student.setEnrolledCourses(coursesStudent);
+                student.setEnrolledCourses(studentCourses);
                 studentList.add(student);
-            }
 
+
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -139,7 +136,7 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
         else {
 
             try (
-                    PreparedStatement ps = connection.prepareStatement("INSERT INTO student(ID, totalCredits, personalDataId) values (?,?,?)");
+                    PreparedStatement ps = createConnection().prepareStatement("INSERT INTO student(studentId, totalCredits, personId) values (?,?,?)");
 
             ) {
                 ps.setInt(1,newStudent.getId());
@@ -160,19 +157,18 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
      * @return studentul daca acesta a fost sters, null in caz contrar
      */
     @Override
-    public Student delete(int id)  {
-        Student foundStudent=findOne(id);
-        String deleteStudentQuery = "delete from student where studentId="+id;
+    public Student delete(int id) {
+        Student foundStudent = findOne(id);
+        String deleteStudentQuery = "delete from student where studentId=" + id;
         String deleteStudentFromEnrolment = "delete from enrolment where StudentId=" + id;
-        if (foundStudent !=null)
-        {
+        if (foundStudent != null) {
 
-            try{
-                Statement statement = connection.createStatement();
-                int result=statement.executeUpdate(deleteStudentFromEnrolment);
-                if(result!=0){
+            try {
+                Statement statement = createConnection().createStatement();
+                int result = statement.executeUpdate(deleteStudentFromEnrolment);
+                if (result != 0) {
                     try {
-                        Statement statement2 = connection.createStatement();
+                        Statement statement2 = createConnection().createStatement();
                         statement2.executeUpdate(deleteStudentQuery);
 
                     } catch (SQLException e) {
@@ -183,18 +179,16 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
+
+
+        try {
+            Statement statement2 = createConnection().createStatement();
+            statement2.executeUpdate(deleteStudentQuery);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
-        if (foundStudent !=null)
-        {
-            try
-            {
-                Statement statement2 = connection.createStatement();
-                statement2.executeUpdate(deleteStudentQuery);
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-            return foundStudent;
-        }
+        return foundStudent;
+    }
         return null;
     }
 
@@ -211,15 +205,21 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
         {
             return null;
         }
+
         else {
             try (
-                    PreparedStatement ps = connection.prepareStatement("update student set studentId=?,totalCredits=?,personalDataId=? WHERE studentId="+newStudent.getId());
+                    PreparedStatement ps = createConnection().prepareStatement("update Student set studentId=?,totalCredits=?,personId=? WHERE studentId="+newStudent.getId());
+                    PreparedStatement ps2 = createConnection().prepareStatement("update Person set ID=?,firstName=?,lastName=? WHERE ID="+newStudent.getPersonalId());
 
             ) {
                 ps.setLong(1,newStudent.getId());
                 ps.setInt(2,newStudent.getTotalCredits());
                 ps.setInt(3,newStudent.getPersonalId());
                 ps.execute();
+                ps2.setInt(1,newStudent.getPersonalId());
+                ps2.setString(2, newStudent.getFirstName());
+                ps2.setString(3,newStudent.getLastName());
+                ps2.execute();
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
@@ -235,7 +235,7 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
      */
     public void saveEnrolment(int studentId, int courseId){
         try (
-                PreparedStatement ps = connection.prepareStatement("insert into enrolment(StudentId,CourseId) values (?,?)")
+                PreparedStatement ps = createConnection().prepareStatement("insert into enrolment(StudentId,CourseId) values (?,?)")
 
         ) {
             ps.setLong(1, studentId);
