@@ -80,11 +80,11 @@ public class JDBC_StudentRepo extends JDBC_repository<Student> {
         try {
             Statement statement = createConnection().createStatement();
             ResultSet result = statement.executeQuery(studentQuery);
-            Student student = new Student();
 
 
 
             while (result.next()) {
+                Student student = new Student();
                 student.setId(result.getInt("studentId"));
                 student.setTotalCredits(result.getInt("totalCredits"));
                 student.setPersonalId(result.getInt("id"));

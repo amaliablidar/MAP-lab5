@@ -76,10 +76,9 @@ public class JDBC_CourseRepo extends JDBC_repository<Course> {
 
             Statement statement = createConnection().createStatement();
             ResultSet result = statement.executeQuery(courseQuery);
-            Course course=new Course();
-            Student student= new Student();
 
             while (result.next()) {
+                Course course=new Course();
                 course.setId(result.getInt("id"));
                 course.setTitle(result.getString("title"));
                 course.setCredits(result.getInt("credits"));
@@ -93,6 +92,8 @@ public class JDBC_CourseRepo extends JDBC_repository<Course> {
                 ResultSet resultStudentList = statement1.executeQuery(studentsListQuery);
 
                 while (resultStudentList.next()) {
+                    Student student= new Student();
+
                     student.setId(resultStudentList.getInt("studentId"));
                     student.setTotalCredits(resultStudentList.getInt("totalCredits"));
                     student.setPersonalId(resultStudentList.getInt("personId"));
@@ -101,6 +102,7 @@ public class JDBC_CourseRepo extends JDBC_repository<Course> {
                     studentsList.add(student);
                 }
                 course.setStudentsList(studentsList);
+
                 courseList.add(course);
 
 
