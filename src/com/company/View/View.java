@@ -26,7 +26,7 @@ public class View {
         {
             System.out.println("Lista de cursuri: ");
             for (Course course : courseList) {
-                System.out.println(course.getTitle() + ",ID:" + course.getId()+"numarul de locuri disponibile "+(course.getMaxStudents()-course.getStudentsList().size()));
+                System.out.println(course.getTitle() + ",ID:" + course.getId()+" numarul de locuri disponibile "+(course.getMaxStudents()-course.getStudentsList().size()+1));
             }
         }
         else
@@ -109,15 +109,13 @@ public class View {
 
         System.out.println("Lista de studenti: ");
         List<Student> studentList =controller.retrieveStudentsEnrolledForACourse(course);
-        if (studentList.size()>0)
-        {
-            List<Student> allStudents = (List<Student>) controller.getStudentRepository().findAll();
-            for (Student student : studentList)
-                for (Student student1 : allStudents) {
-                    if (Objects.equals(student1.getId(), student.getId()))
-                        System.out.println(student1.getFirstName() + " " + student1.getLastName() + ",ID:" + student1.getId());
-                }
-
+        if (studentList.size()>0) {
+            for(Student student : studentList){
+                System.out.println("ID: "+student.getId());
+                System.out.println("Prenume: " + student.getFirstName());
+                System.out.println( "Nume de familie: " + student.getLastName());
+                System.out.println();
+            }
         }
         else
             System.out.println("Nu exista niciun student inscris la acest curs");
@@ -410,7 +408,7 @@ public class View {
         System.out.println(firstOption + "2. Afisati cursurile cu numar disponibil de locuri");
         System.out.println("3. Afisati studentii inscrisi la un anumit curs");
         System.out.println("4. Afisati studentii ordonati alfabetic");
-        System.out.println("5.Afisati cursurile ordonate alfabetic");
+        System.out.println("5. Afisati cursurile ordonate alfabetic");
         System.out.println("6. Filtrati studentii dupa numarul de credite");
         System.out.println("7. Filtrati cursurile dupa numarul de credite");
         System.out.println("8. Inapoi");
@@ -421,7 +419,7 @@ public class View {
     void printCourse(ArrayList<Course>courseList){
         System.out.println("Lista de cursuri:");
         for (int i=0;i< courseList.size();i++) {
-            System.out.println(courseList.get(0).getTitle() + ",ID:" + courseList.get(i).getId());
+            System.out.println(courseList.get(i).getTitle() + ",ID:" + courseList.get(i).getId());
         }
 
     }
