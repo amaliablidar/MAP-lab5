@@ -56,6 +56,7 @@ public class RegistrationSystemController
     {
 
         if((course.getMaxStudents()-course.getStudentsList().size())>0){
+
             if(student.getTotalCredits() + course.getCredits() <= 30) {
                 course.save(student);
                 student.addCourse(course);
@@ -71,6 +72,7 @@ public class RegistrationSystemController
      */
     public ArrayList<Course> getAllCourses()
     {
+
         return  courseRepository.findAll();
     }
 
@@ -99,7 +101,6 @@ public class RegistrationSystemController
      */
     public ArrayList<Student> retrieveStudentsEnrolledForACourse(Course course)
     {
-
         return course.getStudentsList();
 
     }
